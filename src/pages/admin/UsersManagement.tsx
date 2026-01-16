@@ -36,6 +36,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
+import { apiFetch } from "@/services/apiClient";
 
 export default function UsersManagement() {
     const { session } = useAuth();
@@ -49,19 +50,12 @@ export default function UsersManagement() {
     }, [session]);
 
     const fetchUsers = async () => {
-        if (!session?.access_token) return;
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/admin/users`, {
-                headers: { 'Authorization': `Bearer ${session.access_token}` }
-            });
-            const data = await res.json();
-            if (res.ok) {
-                setUsers(data.users);
-            } else {
-                toast.error("Erro ao carregar usuários");
-            }
+            const data = await apiFetch('/api/admin/users');
+            setUsers(data.users);
         } catch (error) {
             console.error(error);
+            toast.error("Erro ao carregar usuários");
         } finally {
             setLoading(false);
         }
@@ -101,7 +95,7 @@ export default function UsersManagement() {
                     <p className="text-gray-400">Gerencie todos os usuários registrados</p>
                 </div>
                 <div className="flex gap-3">
-                    <Button variant="outline" className="border-white/10 text-gray-300 hover:bg-white/5">
+                    <Button variant="outline" className="border-white/10 text-white hover:bg-white/10 hover:text-white">
                         <Download className="mr-2 h-4 w-4" /> Exportar CSV
                     </Button>
                     <Button className="bg-purple-600 hover:bg-purple-700 text-white">

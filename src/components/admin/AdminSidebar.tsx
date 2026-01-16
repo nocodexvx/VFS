@@ -134,6 +134,20 @@ export function AdminSidebar({ collapsed, toggleCollapse }: AdminSidebarProps) {
                         )}
                     </a>
                 ))}
+                <div className="my-4 border-t border-white/5 mx-2" />
+
+                <Link
+                    to="/dashboard"
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all group relative"
+                >
+                    <LogOut size={20} className="flex-shrink-0 text-gray-500 group-hover:text-gray-300 rotate-180" />
+                    {!collapsed && <span className="font-medium flex-1 truncate">Voltar para App</span>}
+                    {collapsed && (
+                        <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 shadow-xl border border-white/10">
+                            Voltar para App
+                        </div>
+                    )}
+                </Link>
             </nav>
 
             {/* Bottom User Section */}

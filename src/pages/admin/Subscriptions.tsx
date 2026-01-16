@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { apiFetch } from "@/services/apiClient";
 
 export default function Subscriptions() {
     const { session } = useAuth();
@@ -31,19 +32,12 @@ export default function Subscriptions() {
     }, [session]);
 
     const fetchSubscriptions = async () => {
-        if (!session?.access_token) return;
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/admin/subscriptions`, {
-                headers: { 'Authorization': `Bearer ${session.access_token}` }
-            });
-            const data = await res.json();
-            if (res.ok) {
-                setSubscriptions(data.subscriptions);
-            } else {
-                toast.error("Erro ao carregar assinaturas");
-            }
+            const data = await apiFetch('/api/admin/subscriptions');
+            setSubscriptions(data.subscriptions);
         } catch (error) {
             console.error(error);
+            toast.error("Erro ao carregar assinaturas");
         } finally {
             setLoading(false);
         }
@@ -107,7 +101,7 @@ export default function Subscriptions() {
                                     </div>
                                 </TableCell>
                                 <TableCell>
-                                    <Badge variant="outline" className="border-white/20 text-gray-300 font-normal">
+                                    <Badge variant="outline" className="border-white/20 text-white font-normal text-xs">
                                         {sub.plan_id}
                                     </Badge>
                                 </TableCell>

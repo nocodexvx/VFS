@@ -48,7 +48,21 @@ export default function AdminDashboard() {
             try {
                 // Fetch Stats
                 const statsData = await apiFetch('/api/admin/stats');
-                setStats(statsData);
+
+                // Check if we gained a new subscriber since last fetch (only if not initial load)
+                setStats(prev => {
+                    if (prev.activeSubscribers > 0 && statsData.activeSubscribers > prev.activeSubscribers) {
+                        toast.success(`🎉 Nova Venda! Total: ${statsData.activeSubscribers}`, {
+                            duration: 5000,
+                            position: 'top-right',
+                            style: { background: '#10B981', color: '#fff', border: 'none' }
+                        });
+                        // Play notification sound
+                        const audio = new Audio('/notification.mp3');
+                        audio.play().catch(e => console.log('Audio play failed', e)); // Silent fail if no interaction
+                    }
+                    return statsData;
+                });
 
                 // Fetch Users for Recent Activity
                 const usersData = await apiFetch('/api/admin/users');
@@ -56,13 +70,17 @@ export default function AdminDashboard() {
 
             } catch (error) {
                 console.error("Failed to fetch dashboard data", error);
-                toast.error("Erro ao carregar dados do dashboard");
+                // Don't show toast error on poll failure to avoid spam
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchData();
+        fetchData(); // Initial User Load
+
+        // Poll every 30 seconds
+        const interval = setInterval(fetchData, 30000);
+        return () => clearInterval(interval);
     }, [session]);
 
     if (loading) {
