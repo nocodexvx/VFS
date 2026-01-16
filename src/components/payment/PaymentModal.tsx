@@ -6,8 +6,6 @@ import { Copy, Check, Loader2 } from "lucide-react";
 import QRCode from "react-qr-code";
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
-import { toast } from 'sonner';
-import { useAuth } from '@/context/AuthContext';
 import { apiFetch } from '@/services/apiClient';
 import { supabase } from '@/lib/supabase';
 
