@@ -30,9 +30,13 @@ export default function Register() {
 
             if (error) throw error;
 
-            if (data.user) {
+            if (data.session) {
+                // Email confirmation disabled or auto-confirm enabled
+                toast.success('Conta criada com sucesso!');
+                navigate('/');
+            } else if (data.user) {
+                // Email confirmation required
                 toast.success('Conta criada! Verifique seu email para confirmar.');
-                // Optionally redirect to login or show verify instructions
                 navigate('/login');
             }
         } catch (error: any) {

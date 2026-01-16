@@ -6,6 +6,7 @@ import { Copy, Check, Loader2 } from "lucide-react";
 import QRCode from "react-qr-code";
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
+import { apiFetch } from '@/services/apiClient';
 
 interface PaymentModalProps {
     isOpen: boolean;
@@ -31,9 +32,8 @@ export function PaymentModal({ isOpen, onClose, plan, price }: PaymentModalProps
         setLoading(true);
 
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/payments/subscribe`, {
+            const data = await apiFetch('/api/payments/subscribe', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     userId: user.id,
                     plan,
@@ -46,18 +46,11 @@ export function PaymentModal({ isOpen, onClose, plan, price }: PaymentModalProps
                 })
             });
 
-            const data = await response.json();
-
-            if (!response.ok) throw new Error(data.error || 'Erro ao gerar PIX');
-
             setPixCode(data.pix_code);
             setStep('pix');
             toast.success('PIX gerado com sucesso!');
 
             // Start polling for subscription status
-            // In a real app we'd use websockets or polling. 
-            // Here we trust the user pays or the webhook eventually hits. 
-            // But immediate refresh helps if backend updated fast.
             checkSubscription();
 
         } catch (error: any) {
