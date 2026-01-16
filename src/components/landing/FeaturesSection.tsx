@@ -13,43 +13,43 @@ import {
 const features = [
   {
     icon: Palette,
-    title: "Efeitos Visuais",
-    description: "Ajuste brilho, contraste, saturação e matiz com sliders precisos para variações randomizadas."
+    title: "Efeitos Visuais IA",
+    description: "Ajuste brilho, contraste e filtros com IA para criar variações visuais únicas que performam no TikTok e Reels."
   },
   {
     icon: Volume2,
-    title: "Áudio e Timing",
-    description: "Controle níveis de zoom, cortes de frames e ajuste de volume para criar versões verdadeiramente únicas."
+    title: "Áudio e Timing Inteligente",
+    description: "Modulação de áudio e cortes precisos para manter a retenção e evitar copyright em plataformas de vídeo."
   },
   {
     icon: Cpu,
-    title: "Aceleração por GPU",
-    description: "Aproveite sua placa de vídeo para processamento ultrarrápido com múltiplos workers."
+    title: "Renderização GPU Ultra-Rápida",
+    description: "Use o poder da nuvem para renderizar centenas de criativos de dropshipping em minutos, não horas."
   },
   {
     icon: Shield,
-    title: "Anti-Detecção",
-    description: "Randomização automática de metadados, pixel shifting e modificação de hash para burlar algoritmos."
+    title: "Anti-Detecção Avançada",
+    description: "Tecnologia exclusiva de hash e metadata spoofing para blindar suas contas contra shadowban por conteúdo duplicado."
   },
   {
     icon: Download,
-    title: "Download em Lote",
-    description: "Baixe todas as variações como arquivos individuais ou em um único arquivo ZIP."
+    title: "Download em Massa",
+    description: "Baixe seu conteúdo viral organizado pronto para postar em múltiplas contas e perfis dark."
   },
   {
     icon: Layers,
-    title: "Múltiplos Formatos",
-    description: "Suporte para formatos de entrada MP4, MOV, AVI, MKV e WebM."
+    title: "Compatibilidade Universal",
+    description: "Importe e exporte em formatos otimizados para Instagram, YouTube Shorts, TikTok e Facebook Ads."
   },
   {
     icon: TrendingUp,
-    title: "Escale seu Conteúdo",
-    description: "Poste em múltiplas contas e plataformas sem ser sinalizado por conteúdo duplicado."
+    title: "Escalabilidade Infinita",
+    description: "A ferramenta secreta dos top players para gerenciar operações de PLR e Dropshipping em escala."
   },
   {
     icon: Clock,
-    title: "Economize Tempo",
-    description: "Gere 100 variações em minutos em vez de horas de edição manual."
+    title: "Automação de Criativos",
+    description: "Transforme um único vídeo vencedor em uma campanha inteira de testes A/B automaticamente."
   }
 ];
 
