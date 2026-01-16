@@ -79,7 +79,7 @@ export default function SystemConfig() {
                 <div className="space-y-6">
 
                     {/* Payment Gateway */}
-                    <div className="bg-[#0d0b14]/50 border border-white/10 rounded-xl p-6 backdrop-blur-sm">
+                    <div className="bg-card/50 border border-border rounded-xl p-6 backdrop-blur-sm">
                         <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center gap-2">
                                 <CreditCard className="text-purple-400" />
@@ -97,7 +97,7 @@ export default function SystemConfig() {
                                     <Input
                                         type={stripeKeyVisible ? "text" : "password"}
                                         defaultValue="***************************"
-                                        className="bg-black/20 border-white/10 text-white font-mono pr-20"
+                                        className="bg-secondary border-border text-foreground font-mono pr-20"
                                     />
                                     <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                                         <button onClick={() => setStripeKeyVisible(!stripeKeyVisible)} className="p-1 hover:text-white text-gray-500">
@@ -110,7 +110,7 @@ export default function SystemConfig() {
                     </div>
 
                     {/* AI Providers */}
-                    <div className="bg-[#0d0b14]/50 border border-white/10 rounded-xl p-6 backdrop-blur-sm">
+                    <div className="bg-card/50 border border-border rounded-xl p-6 backdrop-blur-sm">
                         <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center gap-2">
                                 <Bot className="text-cyan-400" />
@@ -129,7 +129,7 @@ export default function SystemConfig() {
                                     <Input
                                         type={googleKeyVisible ? "text" : "password"}
                                         defaultValue={apiStatus?.googleAi ? "Configurada no .env" : "Não encontrada"}
-                                        className="bg-black/20 border-white/10 text-white font-mono pr-10"
+                                        className="bg-secondary border-border text-foreground font-mono pr-10"
                                         disabled
                                     />
                                 </div>
@@ -139,10 +139,10 @@ export default function SystemConfig() {
                                 <div className="space-y-2">
                                     <Label className="text-gray-300">Modelo Padrão</Label>
                                     <Select defaultValue="gemini-1.5-pro">
-                                        <SelectTrigger className="bg-black/20 border-white/10 text-white">
+                                        <SelectTrigger className="bg-secondary border-border text-foreground">
                                             <SelectValue placeholder="Select model" />
                                         </SelectTrigger>
-                                        <SelectContent className="bg-[#1a1625] border-white/10 text-white">
+                                        <SelectContent className="bg-popover border-border text-popover-foreground">
                                             <SelectItem value="gemini-1.5-pro">gemini-1.5-pro</SelectItem>
                                             <SelectItem value="gemini-1.5-flash">gemini-1.5-flash</SelectItem>
                                         </SelectContent>
@@ -164,7 +164,7 @@ export default function SystemConfig() {
                 <div className="space-y-6">
 
                     {/* Usage Limits */}
-                    <div className="bg-[#0d0b14]/50 border border-white/10 rounded-xl p-6 backdrop-blur-sm">
+                    <div className="bg-card/50 border border-border rounded-xl p-6 backdrop-blur-sm">
                         <h3 className="font-semibold text-white mb-6">Limites do Plano</h3>
 
                         <div className="space-y-6">
@@ -178,14 +178,14 @@ export default function SystemConfig() {
                                             <Label className="text-xs text-gray-500 mb-1 block">Req Diárias</Label>
                                             <Input
                                                 defaultValue={plan === "Free" ? 10 : plan === "Pro" ? 100 : 1000}
-                                                className="h-8 bg-black/20 border-white/10 text-white text-xs"
+                                                className="h-8 bg-secondary border-border text-foreground text-xs"
                                             />
                                         </div>
                                         <div>
                                             <Label className="text-xs text-gray-500 mb-1 block">Tokens/mês</Label>
                                             <Input
                                                 defaultValue={plan === "Free" ? "50k" : plan === "Pro" ? "500k" : "Unlimited"}
-                                                className="h-8 bg-black/20 border-white/10 text-white text-xs"
+                                                className="h-8 bg-secondary border-border text-foreground text-xs"
                                             />
                                         </div>
                                     </div>

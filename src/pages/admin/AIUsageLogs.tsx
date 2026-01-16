@@ -61,7 +61,7 @@ export default function AIUsageLogs() {
             </div>
 
             {/* Table */}
-            <div className="rounded-xl border border-white/10 overflow-hidden bg-[#0d0b14]/50 backdrop-blur-sm">
+            <div className="rounded-xl border border-border overflow-hidden bg-card/50 backdrop-blur-sm">
                 <Table>
                     <TableHeader className="bg-white/5">
                         <TableRow className="border-white/10 hover:bg-transparent">

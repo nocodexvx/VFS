@@ -49,7 +49,7 @@ export function AdminSidebar({ collapsed, toggleCollapse }: AdminSidebarProps) {
     return (
         <aside
             className={cn(
-                "bg-[#0d0b14] border-r border-white/5 fixed left-0 top-0 h-full transition-all duration-300 z-50 flex flex-col",
+                "bg-sidebar border-r border-sidebar-border fixed left-0 top-0 h-full transition-all duration-300 z-50 flex flex-col",
                 collapsed ? "w-[72px]" : "w-[260px]"
             )}
         >
@@ -173,7 +173,7 @@ export function AdminSidebar({ collapsed, toggleCollapse }: AdminSidebarProps) {
                             )}
                         </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-56 bg-[#1a1625] border-white/10 text-gray-200" align="end" side="right">
+                    <DropdownMenuContent className="w-56 bg-sidebar border-sidebar-border text-sidebar-foreground" align="end" side="right">
                         <DropdownMenuLabel>My Account</DropdownMenuLabel>
                         <DropdownMenuSeparator className="bg-white/10" />
                         <DropdownMenuItem className="hover:bg-white/5 focus:bg-white/5 cursor-pointer">Profile Settings</DropdownMenuItem>

@@ -19,7 +19,7 @@ export default function AdminLayout() {
     if (!isAdmin) return null;
 
     return (
-        <div className="min-h-screen bg-[#0a0a0f] text-white font-sans selection:bg-purple-500/30">
+        <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary/30">
             <AdminSidebar collapsed={collapsed} toggleCollapse={() => setCollapsed(!collapsed)} />
             <AdminHeader collapsed={collapsed} />
 

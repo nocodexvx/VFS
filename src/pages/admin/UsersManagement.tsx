@@ -110,7 +110,7 @@ export default function UsersManagement() {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 h-4 w-4" />
                     <Input
                         placeholder="Buscar por email ou nome..."
-                        className="pl-10 bg-[#0a0a0f] border-white/10 text-white placeholder:text-gray-500"
+                        className="pl-10 bg-background border-input text-foreground placeholder:text-muted-foreground"
                     />
                 </div>
 
@@ -133,7 +133,7 @@ export default function UsersManagement() {
             </div>
 
             {/* Table */}
-            <div className="rounded-xl border border-white/10 overflow-hidden bg-[#0d0b14]/50 backdrop-blur-sm">
+            <div className="rounded-xl border border-border overflow-hidden bg-card/50 backdrop-blur-sm">
                 <Table>
                     <TableHeader className="bg-white/5">
                         <TableRow className="border-white/10 hover:bg-transparent">
@@ -191,7 +191,7 @@ export default function UsersManagement() {
                                                 <MoreHorizontal className="h-4 w-4" />
                                             </Button>
                                         </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end" className="bg-[#1a1625] border-white/10 text-gray-200">
+                                        <DropdownMenuContent align="end" className="bg-popover border-border text-popover-foreground">
                                             <DropdownMenuLabel>Ações</DropdownMenuLabel>
                                             <DropdownMenuItem className="hover:bg-white/5 cursor-pointer">
                                                 <Eye className="mr-2 h-4 w-4 text-gray-400" /> Ver Perfil

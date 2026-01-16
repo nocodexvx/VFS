@@ -82,7 +82,7 @@ export function PaymentModal({ isOpen, onClose, plan, price }: PaymentModalProps
 
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
-            <DialogContent className="sm:max-w-md bg-[#1a1625] border-white/10 text-white">
+            <DialogContent className="sm:max-w-md bg-popover border-border text-popover-foreground">
                 <DialogHeader>
                     <DialogTitle>Assinar Plano {plan === 'pro_monthly' ? 'Pro' : 'Business'}</DialogTitle>
                     <DialogDescription className="text-gray-400">
@@ -98,7 +98,7 @@ export function PaymentModal({ isOpen, onClose, plan, price }: PaymentModalProps
                                 placeholder="000.000.000-00"
                                 value={cpf}
                                 onChange={(e) => setCpf(e.target.value)}
-                                className="bg-black/20 border-white/10"
+                                className="bg-secondary border-border"
                                 required
                             />
                         </div>
@@ -120,7 +120,7 @@ export function PaymentModal({ isOpen, onClose, plan, price }: PaymentModalProps
                                 <Input
                                     readOnly
                                     value={pixCode}
-                                    className="bg-black/20 border-white/10 font-mono text-xs"
+                                    className="bg-secondary border-border font-mono text-xs"
                                 />
                                 <Button size="icon" variant="outline" onClick={copyToClipboard}>
                                     {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}

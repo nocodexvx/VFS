@@ -66,7 +66,7 @@ export default function Subscriptions() {
             </div>
 
             {/* Subscriptions Table */}
-            <div className="bg-[#0d0b14]/50 border border-white/10 rounded-xl overflow-hidden backdrop-blur-sm">
+            <div className="bg-card/50 border border-border rounded-xl overflow-hidden backdrop-blur-sm">
                 <div className="p-4 border-b border-white/10 flex items-center justify-between">
                     <h3 className="font-semibold text-white">Transações Recentes</h3>
                 </div>
@@ -119,7 +119,7 @@ export default function Subscriptions() {
                                                 <MoreHorizontal className="h-4 w-4" />
                                             </Button>
                                         </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end" className="bg-[#1a1625] border-white/10 text-gray-200">
+                                        <DropdownMenuContent align="end" className="bg-popover border-border text-popover-foreground">
                                             <DropdownMenuItem className="hover:bg-white/5 cursor-pointer">Ver Detalhes</DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>

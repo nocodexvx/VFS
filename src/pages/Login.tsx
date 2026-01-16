@@ -34,8 +34,8 @@ export default function Login() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-[#0a0a0f] text-white p-4">
-            <div className="w-full max-w-md space-y-8 bg-white/5 p-8 rounded-2xl border border-white/10 backdrop-blur-sm">
+        <div className="min-h-screen flex items-center justify-center bg-background text-foreground p-4">
+            <div className="w-full max-w-md space-y-8 bg-card p-8 rounded-2xl border border-border backdrop-blur-sm">
                 <div className="text-center">
                     <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
                         VariaGen
@@ -54,7 +54,7 @@ export default function Login() {
                                 id="email"
                                 type="email"
                                 required
-                                className="mt-1 bg-black/40 border-white/10 text-white"
+                                className="mt-1 bg-secondary border-input text-foreground"
                                 placeholder="seu@email.com"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
@@ -73,7 +73,7 @@ export default function Login() {
                                 id="password"
                                 type="password"
                                 required
-                                className="mt-1 bg-black/40 border-white/10 text-white"
+                                className="mt-1 bg-secondary border-input text-foreground"
                                 placeholder="••••••••"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
