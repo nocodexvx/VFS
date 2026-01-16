@@ -147,6 +147,15 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', environment: 'production' });
 });
 
+// DEBUG ENV VARS (Temporary)
+app.get('/api/debug-env', (req, res) => {
+  res.json({
+    SUPABASE_URL_EXISTS: !!process.env.SUPABASE_URL,
+    VITE_SUPABASE_URL_EXISTS: !!process.env.VITE_SUPABASE_URL,
+    PORT: process.env.PORT
+  });
+});
+
 // ============================================
 // VIDEO PROCESSOR (FFmpeg Local) - REAL
 // ============================================
@@ -195,9 +204,16 @@ app.get('*', (req, res) => {
       VITE_SUPABASE_KEY: process.env.VITE_SUPABASE_KEY || process.env.SUPABASE_KEY
     };
 
+    // LOG PARA DEBUG
+    console.log('Injecting Env Vars:', {
+      url: !!envPayload.VITE_SUPABASE_URL,
+      key: !!envPayload.VITE_SUPABASE_KEY
+    });
+
     const injectedScript = `<script>window._env_ = ${JSON.stringify(envPayload)}</script>`;
     const finalHtml = htmlData.replace('</head>', `${injectedScript}</head>`);
 
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.send(finalHtml);
   });
 });
