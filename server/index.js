@@ -1,3 +1,4 @@
+import fs from "fs";
 import express from 'express';
 import cors from 'cors';
 import { createClient } from '@supabase/supabase-js';
@@ -170,9 +171,8 @@ const __dirname = path.dirname(__filename);
 // Serve static files from the React app
 // Assumes 'dist' is one level up from 'server' folder (in root)
 const distPath = path.join(__dirname, '../dist');
-app.use(express.static(distPath));
-
-import fs from 'fs';
+// Disable 'index' so that root directory requests fall through to our custom handler
+app.use(express.static(distPath, { index: false }));
 
 // Handle React Routing, return all requests to React app
 app.get('*', (req, res) => {
