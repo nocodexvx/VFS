@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
+import { apiFetch } from "@/services/apiClient";
 
 export default function AIUsageLogs() {
     const { session } = useAuth();
@@ -24,20 +25,13 @@ export default function AIUsageLogs() {
     }, [session]);
 
     const fetchLogs = async () => {
-        if (!session?.access_token) return;
         setLoading(true);
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/admin/logs`, {
-                headers: { 'Authorization': `Bearer ${session.access_token}` }
-            });
-            const data = await res.json();
-            if (res.ok) {
-                setLogs(data.logs);
-            } else {
-                toast.error("Erro ao carregar logs");
-            }
+            const data = await apiFetch('/api/admin/logs');
+            setLogs(data.logs);
         } catch (error) {
             console.error(error);
+            toast.error("Erro ao carregar logs");
         } finally {
             setLoading(false);
         }

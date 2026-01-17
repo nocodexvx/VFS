@@ -4,7 +4,9 @@ interface FetchOptions extends RequestInit {
     requireAuth?: boolean;
 }
 
-const API_BASE_URL = import.meta.env.PROD ? '' : (import.meta.env.VITE_API_URL || 'http://localhost:3000');
+// If no VITE_API_URL is set, default to empty string (relative path) for production-like behavior
+// or proper env var. Avoiding hardcoded localhost to prevent mixing environments.
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
 export async function apiFetch(endpoint: string, options: FetchOptions = {}) {
     const { requireAuth = true, ...fetchOptions } = options;

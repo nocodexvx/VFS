@@ -27,6 +27,7 @@ import {
 import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
+import { api, apiFetch } from "@/services/apiClient";
 
 export default function SystemConfig() {
     const { session } = useAuth();
@@ -41,12 +42,8 @@ export default function SystemConfig() {
     }, [session]);
 
     const checkStatus = async () => {
-        if (!session?.access_token) return;
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/admin/config/status`, {
-                headers: { 'Authorization': `Bearer ${session.access_token}` }
-            });
-            const data = await res.json();
+            const data = await apiFetch('/api/admin/config/status');
             setApiStatus(data);
         } catch (e) {
             console.error("Failed to check status", e);

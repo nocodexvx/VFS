@@ -39,7 +39,10 @@ router.get('/users', requireAdmin, async (req, res) => {
 // CREATE USER (ADMIN ONLY)
 router.post('/users', requireAdmin, async (req, res) => {
     try {
-        const { email, password, fullName, role, plan } = req.body;
+        const { role, plan } = req.body;
+        const email = req.body.email?.trim();
+        const password = req.body.password?.trim();
+        const fullName = req.body.fullName?.trim();
 
         if (!email || !password) {
             return res.status(400).json({ error: 'Email e senha são obrigatórios.' });
