@@ -45,6 +45,8 @@ router.post('/users', requireAdmin, async (req, res) => {
             return res.status(400).json({ error: 'Email e senha são obrigatórios.' });
         }
 
+        console.log(`[Admin] Creating user: ${email}`);
+
         // 1. Create Auth User (Supabase Auth)
         const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
             email,
@@ -55,13 +57,18 @@ router.post('/users', requireAdmin, async (req, res) => {
 
         if (authError) {
             console.error("Auth Create Error:", authError);
-            return res.status(400).json({ error: 'Falha ao criar usuário. Verifique se a KEY de serviço está configurada.' });
+            if (authError.message.includes("already registered") || authError.status === 422) {
+                return res.status(409).json({ error: 'Este email já está cadastrado.' });
+            }
+            return res.status(400).json({ error: `Erro no Auth: ${authError.message}` });
         }
 
         const userId = authData.user.id;
+        console.log(`[Admin] Auth user created: ${userId}`);
 
         // 2. Insert into 'users' table (Public Schema)
-        const { error: dbError } = await supabase
+        // CRITICAL: Use supabaseAdmin to bypass RLS policies
+        const { error: dbError } = await supabaseAdmin
             .from('users')
             .insert({
                 id: userId,
@@ -73,13 +80,14 @@ router.post('/users', requireAdmin, async (req, res) => {
 
         if (dbError) {
             console.error("DB Insert Error:", dbError);
-            return res.status(500).json({ error: 'Erro ao salvar dados do usuário no banco.' });
+            // Attempt to cleanup Auth user if DB fails ensuring consistency
+            await supabaseAdmin.auth.admin.deleteUser(userId);
+            return res.status(500).json({ error: `Erro ao salvar no banco: ${dbError.message}` });
         }
 
         // 3. Insert Subscription (if plan selected)
-        // If plan is 'none' or undefined, no subscription is created -> User has NO access (must pay)
         if (plan && plan !== 'none') {
-            const { error: subError } = await supabase
+            const { error: subError } = await supabaseAdmin
                 .from('subscriptions')
                 .insert({
                     user_id: userId,
@@ -95,7 +103,7 @@ router.post('/users', requireAdmin, async (req, res) => {
         res.json({ message: 'Usuário criado com sucesso!', user: authData.user });
 
     } catch (e) {
-        console.error(e);
+        console.error("Critical Error in create user:", e);
         res.status(500).json({ error: e.message });
     }
 });
