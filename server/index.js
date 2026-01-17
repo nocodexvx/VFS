@@ -13,8 +13,8 @@ const PORT = process.env.PORT || 3000;
 // ============================================
 // FIX #1: Aumentar limite de payload para 200MB
 // ============================================
-app.use(express.json({ limit: '200mb' }));
-app.use(express.urlencoded({ limit: '200mb', extended: true }));
+app.use(express.json({ limit: '500mb' }));
+app.use(express.urlencoded({ limit: '500mb', extended: true }));
 
 // FIX #2: CORS Permissivo (Correção solicitada)
 app.use(cors({
