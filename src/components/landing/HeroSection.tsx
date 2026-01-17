@@ -92,7 +92,7 @@ export function HeroSection() {
             className="relative z-10"
           >
             <img
-              src="/assets/hero-illustration.png"
+              src="/assets/hero-illustration.jpg"
               alt="VariaGen Platform Interface"
               className="w-full h-auto drop-shadow-2xl hover:scale-105 transition-transform duration-500 ease-in-out"
             />
