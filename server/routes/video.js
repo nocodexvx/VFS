@@ -131,41 +131,50 @@ async function processVideo(jobId, inputPath, variations, effectsObj, timingObj)
         const timingAudio = typeof timingObj === 'string' ? JSON.parse(timingObj) : (timingObj || {});
 
         const outputs = [];
-        const promises = [];
-
+        // Create promises for all variations
+        const variationPromises = [];
         for (let i = 0; i < variations; i++) {
-            const outputPath = path.join(outputDir, `${jobId}_var_${i}.mp4`);
-            outputs.push(outputPath);
+            variationPromises.push(async () => {
+                const outputPath = path.join(outputDir, `${jobId}_var_${i}.mp4`);
+                outputs.push(outputPath);
 
-            const p = new Promise((resolve, reject) => {
                 // Generic Defaults if missing
-                const brightness = getRandom(visualEffects.brightness || [-5, 5]) / 100; // % to value? ffmpeg eq brightness is -1.0 to 1.0. 5% is 0.05
+                const brightness = getRandom(visualEffects.brightness || [-5, 5]) / 100;
                 const contrast = 1 + (getRandom(visualEffects.contrast || [-5, 5]) / 100);
                 const saturation = 1 + (getRandom(visualEffects.saturation || [-5, 5]) / 100);
                 const hue = getRandom(visualEffects.hue || [-3, 3]);
 
-                // Timing/Audio (Mock implementation for now - simple duration cut would need probe)
-                // For now heavily relying on visual filters as main variation source
-                // Volume
                 const vol = getRandom(timingAudio.volume || [-1, 1]);
 
-                let command = ffmpeg(inputPath)
-                    .videoFilters([
-                        `eq=contrast=${contrast.toFixed(2)}:brightness=${brightness.toFixed(2)}:saturation=${saturation.toFixed(2)}`,
-                        `hue=h=${hue.toFixed(0)}`
-                    ])
-                    .audioFilters(`volume=${(1 + vol / 10).toFixed(2)}`) // rough dB approx
-                    .outputOptions('-preset ultrafast')
-                    .output(outputPath)
-                    .on('end', () => resolve())
-                    .on('error', (err) => reject(err));
-                command.run();
+                return new Promise((resolve, reject) => {
+                    let command = ffmpeg(inputPath)
+                        .videoFilters([
+                            `eq=contrast=${contrast.toFixed(2)}:brightness=${brightness.toFixed(2)}:saturation=${saturation.toFixed(2)}`,
+                            `hue=h=${hue.toFixed(0)}`
+                        ])
+                        .audioFilters(`volume=${(1 + vol / 10).toFixed(2)}`)
+                        .outputOptions('-preset ultrafast')
+                        .output(outputPath)
+                        .on('end', () => resolve())
+                        .on('error', (err) => reject(err));
+                    command.run();
+                });
             });
-            promises.push(p);
         }
 
-        await Promise.all(promises);
-        await updateJob(jobId, { progress: 90, outputs: outputs });
+        // Process in Batches safely
+        const BATCH_SIZE = 5;
+        for (let i = 0; i < variationPromises.length; i += BATCH_SIZE) {
+            const batch = variationPromises.slice(i, i + BATCH_SIZE);
+            await Promise.all(batch.map(fn => fn()));
+
+            // Update progress
+            const progress = Math.round(((i + batch.length) / variations) * 90) + 5;
+            await updateJob(jobId, { progress });
+        }
+
+        // Final progress update before zip
+        await updateJob(jobId, { progress: 95, outputs: outputs });
 
         // Create Zip
         const zipName = `variagen_${jobId}.zip`;
