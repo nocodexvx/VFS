@@ -1,6 +1,6 @@
 import express from 'express';
 import { createClient } from '@supabase/supabase-js';
-import { createPixCharge } from '../services/syncpay.js';
+import { createPixCharge, verifyTransaction } from '../services/syncpay.js';
 
 const router = express.Router();
 

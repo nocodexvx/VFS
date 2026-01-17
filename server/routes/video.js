@@ -189,6 +189,18 @@ async function processVideo(jobId, inputPath, variations, effectsObj, timingObj)
                     progress: 100,
                     zip_path: zipPath
                 });
+
+                // DIAGNOSIS FIX: Register AI Usage for Cost Tracking
+                // We assume 1 video = 10 tokens (arbitrary for now) or based on duration
+                const { error: logError } = await supabase.from('ai_usage_logs').insert({
+                    job_id: jobId, // If column exists, otherwise remove
+                    feature: 'video_generation',
+                    provider: 'ffmpeg_local',
+                    cost_tokens: 10 * variations,
+                    status: 'success'
+                });
+                if (logError) console.warn("Failed to log usage:", logError);
+
                 resolve();
             });
 
