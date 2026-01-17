@@ -50,6 +50,21 @@ router.post('/users', requireAdmin, async (req, res) => {
 
         console.log(`[Admin] Creating user: ${email}`);
 
+        // 0. ANTIGRAVITY FIX: Check for "Zombie" users in public DB
+        // If a user exists in public.users but NOT in Auth (zombie), the trigger will fail on unique email constraint.
+        const { data: zombieUser } = await supabaseAdmin
+            .from('users')
+            .select('id')
+            .eq('email', email)
+            .single();
+
+        if (zombieUser) {
+            console.warn(`[Admin] Found zombie user ${zombieUser.id} with email ${email}. Cleaning up...`);
+            await supabaseAdmin.from('users').delete().eq('id', zombieUser.id);
+            // Also clean subscriptions to be safe
+            await supabaseAdmin.from('subscriptions').delete().eq('user_id', zombieUser.id);
+        }
+
         // 1. Create Auth User (Supabase Auth)
         const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
             email,
