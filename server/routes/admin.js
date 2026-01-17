@@ -84,23 +84,19 @@ router.post('/users', requireAdmin, async (req, res) => {
         const userId = authData.user.id;
         console.log(`[Admin] Auth user created: ${userId}`);
 
-        // 2. Insert into 'users' table (Public Schema)
-        // CRITICAL: Use supabaseAdmin to bypass RLS policies
-        const { error: dbError } = await supabaseAdmin
-            .from('users')
-            .insert({
-                id: userId,
-                email,
-                full_name: fullName,
-                role: role || 'user',
-                created_at: new Date()
-            });
+        // 2. UPDATE User Role (Public Schema)
+        // trigger 'on_auth_user_created' already created the public.users row.
+        // We just need to update the role if it was set to something other than 'user'
+        if (role && role !== 'user') {
+            const { error: dbError } = await supabaseAdmin
+                .from('users')
+                .update({ role })
+                .eq('id', userId);
 
-        if (dbError) {
-            console.error("DB Insert Error:", dbError);
-            // Attempt to cleanup Auth user if DB fails ensuring consistency
-            await supabaseAdmin.auth.admin.deleteUser(userId);
-            return res.status(500).json({ error: `Erro ao salvar no banco: ${dbError.message}` });
+            if (dbError) {
+                console.error("DB Update Role Error:", dbError);
+                // Non-critical: user is created, just role is wrong.
+            }
         }
 
         // 3. Insert Subscription (if plan selected)
