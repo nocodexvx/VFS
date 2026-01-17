@@ -105,45 +105,93 @@ export default function Dashboard() {
       <main className="pt-20 pb-12 px-4">
         <div className="container mx-auto max-w-6xl">
 
-          {/* VIRAL STRATEGY HEADER */}
-          <div className="mb-8 p-6 bg-gradient-to-r from-purple-900/50 to-pink-900/50 rounded-xl border border-purple-500/30">
-            <h1 className="text-3xl font-bold mb-2 text-white">🔥 Estratégia de Escala Viral</h1>
-            <p className="text-gray-300 mb-4">
-              Configuração Automática para Máxima Performance no Instagram.
-            </p>
-            <ul className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-400">
-              <li className="flex items-center gap-2"><span className="text-green-400">✓</span> <strong>21 Variações</strong> (Postar 3x por dia durante uma semana)</li>
-              <li className="flex items-center gap-2"><span className="text-green-400">✓</span> Postar como <strong>"Reels de Teste"</strong> (Trial Reels)</li>
-              <li className="flex items-center gap-2"><span className="text-green-400">✓</span> <strong>Metadados Únicos</strong> (Engana o algoritmo para evitar shadowban)</li>
-              <li className="flex items-center gap-2"><span className="text-green-400">✓</span> Use sempre o vídeo original com <strong>alta qualidade</strong></li>
-            </ul>
-          </div>
+          import {PRESETS, Preset} from "@/data/presets";
+          import {Sparkles} from "lucide-react";
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="space-y-6">
-              <VideoUpload selectedVideo={selectedVideo} onVideoSelect={setSelectedVideo} />
-              <VisualEffects effects={visualEffects} onChange={setVisualEffects} />
+          // ... (inside component)
+
+          const [currentPreset, setCurrentPreset] = useState<Preset>(PRESETS[0]);
+
+  // Handler to apply preset
+  const applyPreset = (preset: Preset) => {
+              setCurrentPreset(preset);
+            setVisualEffects(preset.values.visual);
+            setTimingAudio(preset.values.timing);
+    setProcessing(prev => ({
+              ...prev,
+              variations: preset.values.processing.variations || prev.variations
+    }));
+            toast.success(`Estratégia "${preset.title}" carregada!`);
+  };
+
+            return (
+            <div className="min-h-screen bg-background">
+              <Header />
+              <main className="pt-20 pb-12 px-4">
+                <div className="container mx-auto max-w-6xl">
+
+                  {/* PRESET SELECTOR */}
+                  <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+                    {PRESETS.map((preset) => (
+                      <button
+                        key={preset.id}
+                        onClick={() => applyPreset(preset)}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-all whitespace-nowrap ${currentPreset.id === preset.id
+                            ? "bg-primary/20 border-primary text-primary hover:bg-primary/30"
+                            : "bg-background border-border text-muted-foreground hover:bg-secondary"
+                          }`}
+                      >
+                        {currentPreset.id === preset.id && <Sparkles className="w-3 h-3" />}
+                        <span className="text-sm font-medium">{preset.title}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* DYNAMIC STRATEGY HEADER */}
+                  <div className="mb-8 p-6 bg-gradient-to-r from-purple-900/50 to-pink-900/50 rounded-xl border border-purple-500/30 transition-all">
+                    <h1 className="text-3xl font-bold mb-2 text-white">{currentPreset.copy.header}</h1>
+                    <p className="text-gray-300 mb-4">
+                      {currentPreset.copy.subHeader}
+                    </p>
+                    <ul className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-400">
+                      {currentPreset.copy.items.map((item, idx) => (
+                        <li key={idx} className="flex items-center gap-2">
+                          <span className="text-green-400 font-bold">{item.icon}</span>
+                          <span dangerouslySetInnerHTML={{
+                            __html: item.highlight
+                              ? item.text.replace(item.highlight, `<strong class="text-white">${item.highlight}</strong>`)
+                              : item.text
+                          }} />
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="space-y-6">
+                      <VideoUpload selectedVideo={selectedVideo} onVideoSelect={setSelectedVideo} />
+                      <VisualEffects effects={visualEffects} onChange={setVisualEffects} />
+                    </div>
+
+                    <div className="space-y-6">
+                      <TimingAudio settings={timingAudio} onChange={setTimingAudio} />
+                      <ProcessingSettings settings={processing} onChange={setProcessing} />
+                    </div>
+                  </div>
+
+                  <div className="mt-6 space-y-6">
+                    <ProcessingProgress
+                      current={currentVariation}
+                      total={processing.variations}
+                      isProcessing={isProcessing}
+                      onStart={handleStart}
+                      onStop={handleStop}
+                      canStart={!!selectedVideo && !isProcessing}
+                    />
+                    <OutputResults variations={processing.variations} isComplete={isComplete} zipUrl={zipUrl} />
+                  </div>
+                </div>
+              </main>
             </div>
-
-            <div className="space-y-6">
-              <TimingAudio settings={timingAudio} onChange={setTimingAudio} />
-              <ProcessingSettings settings={processing} onChange={setProcessing} />
-            </div>
-          </div>
-
-          <div className="mt-6 space-y-6">
-            <ProcessingProgress
-              current={currentVariation}
-              total={processing.variations}
-              isProcessing={isProcessing}
-              onStart={handleStart}
-              onStop={handleStop}
-              canStart={!!selectedVideo && !isProcessing}
-            />
-            <OutputResults variations={processing.variations} isComplete={isComplete} zipUrl={zipUrl} />
-          </div>
-        </div>
-      </main>
-    </div>
-  );
+            );
 }
