@@ -122,8 +122,16 @@ async function processVideo(jobId, inputPath, variations) {
             outputs.push(outputPath);
 
             const p = new Promise((resolve, reject) => {
+                // Generate random values within range (mocking for now since we need to pass params)
+                // Ideally, we pass these ranges from frontend. For now, let's just make it subtler.
+                const contrast = 1 + (Math.random() * 0.2 - 0.1); // 0.9 to 1.1
+                const brightness = Math.random() * 0.1 - 0.05; // -0.05 to 0.05
+                const saturation = 1 + (Math.random() * 0.2 - 0.1); // 0.9 to 1.1
+
                 let command = ffmpeg(inputPath)
-                    .videoFilters(i % 2 === 0 ? 'hue=s=0' : 'eq=contrast=1.2')
+                    .videoFilters([
+                        `eq=contrast=${contrast}:brightness=${brightness}:saturation=${saturation}`
+                    ])
                     .outputOptions('-preset ultrafast')
                     .output(outputPath)
                     .on('end', () => resolve())

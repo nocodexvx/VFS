@@ -16,24 +16,25 @@ export default function Dashboard() {
   const [jobId, setJobId] = useState<string | null>(null);
   const [zipUrl, setZipUrl] = useState<string | null>(null);
 
+  /* VIRAL STRATEGY DEFAULT PRESETS */
   const [visualEffects, setVisualEffects] = useState<VisualEffectsState>({
-    brightness: [-5, 5],
-    contrast: [-5, 5],
-    saturation: [-8, 8],
-    hue: [-3, 3],
+    brightness: [-6, 5],
+    contrast: [-7, 6],
+    saturation: [0, 10], // Adjusted to avoid B&W
+    hue: [-5, 5],
   });
 
   const [timingAudio, setTimingAudio] = useState<TimingAudioState>({
-    zoom: [1, 5],
-    cutStart: [0, 3],
-    cutEnd: [0, 3],
-    volume: [-1, 1],
+    zoom: [1, 8],
+    cutStart: [0, 0.3], // approx 9 frames at 30fps
+    cutEnd: [0, 0.3],
+    volume: [-2, 2],
   });
 
   const [processing, setProcessing] = useState<ProcessingState>({
-    workers: 4,
-    variations: 5, // Default lower for safer local testing
-    gpuAcceleration: true,
+    workers: 6,
+    variations: 21, // Viral Strategy: 3 posts/day * 7 days
+    gpuAcceleration: false, // User requested OFF
   });
 
   const pollStatus = useCallback(async (id: string, totalVariations: number) => {
@@ -98,8 +99,20 @@ export default function Dashboard() {
       <Header />
       <main className="pt-20 pb-12 px-4">
         <div className="container mx-auto max-w-6xl">
-          <h1 className="text-3xl font-bold mb-2">Processador de Vídeo (Local)</h1>
-          <p className="text-muted-foreground mb-8">Gere variações únicas dos seus vídeos usando FFmpeg Local</p>
+
+          {/* VIRAL STRATEGY HEADER */}
+          <div className="mb-8 p-6 bg-gradient-to-r from-purple-900/50 to-pink-900/50 rounded-xl border border-purple-500/30">
+            <h1 className="text-3xl font-bold mb-2 text-white">🔥 Estratégia de Escala Viral</h1>
+            <p className="text-gray-300 mb-4">
+              Preset carregado automaticamente para modelos de Alta Performance.
+            </p>
+            <ul className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-400">
+              <li className="flex items-center gap-2"><span className="text-green-400">✓</span> 21 Variações (Postar 3x por dia)</li>
+              <li className="flex items-center gap-2"><span className="text-green-400">✓</span> Postar como "Trial Reels" (para não-seguidores)</li>
+              <li className="flex items-center gap-2"><span className="text-green-400">✓</span> Metadados e Filtros Únicos</li>
+              <li className="flex items-center gap-2"><span className="text-green-400">✓</span> Use sempre o vídeo original (alta qualidade)</li>
+            </ul>
+          </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="space-y-6">
