@@ -47,12 +47,28 @@ export function PaymentModal({ isOpen, onClose, plan, price }: PaymentModalProps
                     options: { data: { full_name: name } }
                 });
 
-                if (authError) throw authError;
+                if (authError) {
+                    // Fallback: If user exists, try to login
+                    if (authError.status === 400 || authError.status === 422) {
+                        const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
+                            email,
+                            password
+                        });
 
-                if (authData.user) {
+                        if (loginError) {
+                            // If password mismatch, throw original error
+                            throw new Error('Este email já existe. Tente fazer login ou use outro email.');
+                        }
+
+                        if (loginData.user) {
+                            userId = loginData.user.id;
+                            // Update name if needed
+                        }
+                    } else {
+                        throw authError;
+                    }
+                } else if (authData.user) {
                     userId = authData.user.id;
-                    // Auto-signin is usually handled by Supabase client if session is returned
-                    // but we ensure we have the ID to proceed with payment immediately
                 }
             }
 
