@@ -1,4 +1,4 @@
-import { Bell, Search, Moon } from "lucide-react";
+import { Bell, Search, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -105,16 +105,7 @@ export function AdminHeader({ collapsed }: AdminHeaderProps) {
                 <div className="h-6 w-px bg-white/10 mx-2" />
 
                 <Button variant="ghost" size="icon" onClick={toggleTheme} className="text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-transform active:scale-95">
-                    {isDark ? <Moon className="h-5 w-5" /> : <Search className="h-5 w-5 rotate-180" />}
-                    {/* Assuming Sun icon was not imported in the edited file context previously, falling back to rotate effect or need to import Sun. 
-                        Wait, previous context showed 'Bell, Search, Moon' imported. I will use Moon for now or re-add Sun import if needed.
-                        Actually, let's stick to Moon for 'Dark' and maybe 'Sun' if I import it safely.
-                        Safest: Just toggle opacity or similar if icon missing. 
-                        Let's check imports. Previous file content had: import { Bell, Search, Moon } from "lucide-react"; 
-                        User REQUESTED 'Sun' earlier but I replaced imports. 
-                        I will add 'Sun' to imports to be safe. */}
-                    <Moon className={cn("h-5 w-5 transition-all", isDark ? "scale-100" : "scale-0 hidden")} />
-                    <div className={cn("h-5 w-5 rounded-full border-2 border-current transition-all", !isDark ? "scale-100" : "scale-0 hidden")} />
+                    {isDark ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
                 </Button>
             </div>
         </header>
