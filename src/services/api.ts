@@ -18,7 +18,7 @@ export const api = {
     },
 
     getDownloadUrl: (jobId: string) => {
-        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+        const baseUrl = import.meta.env.PROD ? '' : (import.meta.env.VITE_API_URL || 'http://localhost:3000');
         return `${baseUrl}/api/download/${jobId}`;
     }
 };
