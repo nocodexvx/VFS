@@ -164,7 +164,11 @@ router.delete('/users/:id', requireAdmin, async (req, res) => {
 
         if (authError) {
             console.error("Auth Delete Error:", authError);
-            return res.status(400).json({ error: 'Falha ao excluir usuário do Auth.' });
+            // Ignore "User not found" error to allow cleaning up public table
+            if (!authError.message.includes("User not found") && authError.status !== 404) {
+                return res.status(400).json({ error: `Falha ao excluir usuário do Auth: ${authError.message}` });
+            }
+            console.warn("User not found in Auth, proceeding to delete from DB.");
         }
 
         // 2. Delete from Public Table (If cascade not set up, though usually it is. We do it to be safe)
