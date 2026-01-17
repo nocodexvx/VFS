@@ -73,9 +73,27 @@ function processQueue() {
         });
 }
 
-// POST /api/process
-router.post('/process', upload.single('video'), async (req, res) => {
+// IMPORTS NEEDED FOR AUTH
+import { requireAuth } from '../middleware/auth.js';
+
+// POST /api/process - SECURED
+router.post('/process', requireAuth, upload.single('video'), async (req, res) => {
     try {
+        const user = req.user;
+
+        // 1. CHECK SUBSCRIPTION
+        const { data: sub, error: subError } = await supabase
+            .from('subscriptions')
+            .select('status')
+            .eq('user_id', user.id)
+            .single();
+
+        if (subError || !sub || sub.status !== 'active') {
+            // Delete uploaded file if unauthorized to save space
+            if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+            return res.status(403).json({ error: 'Assinatura ativa necessária para gerar vídeos.' });
+        }
+
         if (!req.file) return res.status(400).json({ error: 'No video file provided' });
 
         const jobId = Date.now().toString();
