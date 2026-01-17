@@ -51,7 +51,10 @@ export const requireAdmin = async (req, res, next) => {
             .single();
 
         if (dbError || userData?.role !== 'admin') {
-            return res.status(403).json({ error: 'Access denied: Props only' });
+            // DEBUG: Return WHY it failed
+            return res.status(403).json({
+                error: `Access denied. User: ${user.email}. Role: ${userData?.role || 'none'}. Admins: ${adminEmails.length}`
+            });
         }
 
         // Attach user to request for further use
