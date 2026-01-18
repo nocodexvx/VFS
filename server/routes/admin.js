@@ -200,7 +200,13 @@ router.delete('/users/:id', requireAdmin, async (req, res) => {
     try {
         const { id } = req.params;
 
-        // 1. Delete from Supabase Auth (This is the master record)
+        // 0. Delete subscriptions first (explicit cleanup)
+        await supabaseAdmin.from('subscriptions').delete().eq('user_id', id);
+
+        // 1. Delete ai_usage_logs (explicit cleanup)
+        await supabaseAdmin.from('ai_usage_logs').delete().eq('user_id', id);
+
+        // 2. Delete from Supabase Auth (This is the master record)
         const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(id);
 
         if (authError) {
@@ -212,8 +218,8 @@ router.delete('/users/:id', requireAdmin, async (req, res) => {
             console.warn("User not found in Auth, proceeding to delete from DB.");
         }
 
-        // 2. Delete from Public Table (If cascade not set up, though usually it is. We do it to be safe)
-        const { error: dbError } = await supabase
+        // 3. Delete from Public Table (If cascade not set up, though usually it is. We do it to be safe)
+        const { error: dbError } = await supabaseAdmin
             .from('users')
             .delete()
             .eq('id', id);
@@ -225,6 +231,7 @@ router.delete('/users/:id', requireAdmin, async (req, res) => {
         res.json({ message: 'Usuário excluído permanentemente.' });
 
     } catch (e) {
+        console.error("Delete user error:", e);
         res.status(500).json({ error: e.message });
     }
 });
