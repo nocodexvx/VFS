@@ -199,39 +199,65 @@ router.post('/users/:id/ban', requireAdmin, async (req, res) => {
 router.delete('/users/:id', requireAdmin, async (req, res) => {
     try {
         const { id } = req.params;
+        console.log(`[ADMIN DELETE] Starting deletion for user: ${id}`);
 
         // 0. Delete subscriptions first (explicit cleanup)
-        await supabaseAdmin.from('subscriptions').delete().eq('user_id', id);
+        const { error: subError } = await supabaseAdmin.from('subscriptions').delete().eq('user_id', id);
+        if (subError) {
+            console.error("[DELETE] Subscriptions delete error:", subError);
+        } else {
+            console.log("[DELETE] Subscriptions deleted successfully");
+        }
 
         // 1. Delete ai_usage_logs (explicit cleanup)
-        await supabaseAdmin.from('ai_usage_logs').delete().eq('user_id', id);
+        const { error: logsError } = await supabaseAdmin.from('ai_usage_logs').delete().eq('user_id', id);
+        if (logsError) {
+            console.error("[DELETE] AI logs delete error:", logsError);
+        } else {
+            console.log("[DELETE] AI logs deleted successfully");
+        }
 
         // 2. Delete from Supabase Auth (This is the master record)
         const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(id);
 
         if (authError) {
-            console.error("Auth Delete Error:", authError);
+            console.error("[DELETE] Auth Delete Error:", authError);
             // Ignore "User not found" error to allow cleaning up public table
             if (!authError.message.includes("User not found") && authError.status !== 404) {
                 return res.status(400).json({ error: `Falha ao excluir usuário do Auth: ${authError.message}` });
             }
-            console.warn("User not found in Auth, proceeding to delete from DB.");
+            console.warn("[DELETE] User not found in Auth, proceeding to delete from DB.");
+        } else {
+            console.log("[DELETE] Auth user deleted successfully");
         }
 
         // 3. Delete from Public Table (If cascade not set up, though usually it is. We do it to be safe)
-        const { error: dbError } = await supabaseAdmin
+        const { data: deletedUsers, error: dbError, count } = await supabaseAdmin
             .from('users')
-            .delete()
-            .eq('id', id);
+            .delete({ count: 'exact' })
+            .eq('id', id)
+            .select();
 
         if (dbError) {
-            console.warn("DB Delete Warning (might have cascaded already):", dbError);
+            console.error("[DELETE] DB Delete Error:", dbError);
+            return res.status(500).json({ error: `Erro ao deletar do banco público: ${dbError.message}` });
         }
 
-        res.json({ message: 'Usuário excluído permanentemente.' });
+        console.log("[DELETE] Public user delete result:", { deletedUsers, count });
+
+        if (!deletedUsers || deletedUsers.length === 0) {
+            console.warn("[DELETE] No user was deleted from public.users table");
+            return res.status(404).json({ error: 'Usuário não encontrado no banco de dados.' });
+        }
+
+        console.log(`[ADMIN DELETE] User ${id} deleted completely`);
+        res.json({
+            message: 'Usuário excluído permanentemente.',
+            deletedCount: deletedUsers.length
+        });
 
     } catch (e) {
-        console.error("Delete user error:", e);
+        console.error("[DELETE] Critical error:", e);
         res.status(500).json({ error: e.message });
     }
 });
