@@ -231,10 +231,24 @@ router.delete('/users/:id', requireAdmin, async (req, res) => {
             console.log("[DELETE] Auth user deleted successfully");
         }
 
-        // 3. Delete from Public Table (If cascade not set up, though usually it is. We do it to be safe)
-        const { data: deletedUsers, error: dbError, count } = await supabaseAdmin
+        // 3. Verify user exists before attempting delete
+        const { data: userCheck } = await supabaseAdmin
             .from('users')
-            .delete({ count: 'exact' })
+            .select('id, email')
+            .eq('id', id)
+            .single();
+
+        if (!userCheck) {
+            console.warn("[DELETE] User not found in public.users table");
+            return res.status(404).json({ error: 'Usuário não encontrado no banco de dados.' });
+        }
+
+        console.log("[DELETE] User found, proceeding with delete:", userCheck);
+
+        // 3. Delete from Public Table (If cascade not set up, though usually it is. We do it to be safe)
+        const { data: deletedUsers, error: dbError } = await supabaseAdmin
+            .from('users')
+            .delete()
             .eq('id', id)
             .select();
 
@@ -243,21 +257,41 @@ router.delete('/users/:id', requireAdmin, async (req, res) => {
             return res.status(500).json({ error: `Erro ao deletar do banco público: ${dbError.message}` });
         }
 
-        console.log("[DELETE] Public user delete result:", { deletedUsers, count });
+        console.log("[DELETE] Public user delete result:", deletedUsers);
 
         if (!deletedUsers || deletedUsers.length === 0) {
-            console.warn("[DELETE] No user was deleted from public.users table");
-            return res.status(404).json({ error: 'Usuário não encontrado no banco de dados.' });
+            console.error("[DELETE] DELETE query succeeded but no rows affected!");
+            return res.status(500).json({ error: 'Falha ao deletar: nenhum registro foi afetado (provável problema de RLS)' });
         }
 
-        console.log(`[ADMIN DELETE] User ${id} deleted completely`);
+        console.log(`[ADMIN DELETE] User ${id} deleted completely - ${deletedUsers.length} record(s) deleted`);
         res.json({
             message: 'Usuário excluído permanentemente.',
-            deletedCount: deletedUsers.length
+            deletedUser: deletedUsers[0]
         });
 
     } catch (e) {
         console.error("[DELETE] Critical error:", e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// DIAGNOSTIC: Test if service role can delete
+router.post('/test-delete-capability', requireAdmin, async (req, res) => {
+    try {
+        const hasServiceRole = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
+        const keyUsed = process.env.SUPABASE_SERVICE_ROLE_KEY ? 'SERVICE_ROLE_KEY' :
+                        process.env.VITE_SUPABASE_KEY ? 'VITE_SUPABASE_KEY' : 'SUPABASE_KEY';
+
+        res.json({
+            hasServiceRoleKey: hasServiceRole,
+            keyUsed,
+            canBypassRLS: hasServiceRole,
+            message: hasServiceRole
+                ? 'Service Role configurado corretamente - pode deletar'
+                : 'AVISO: Sem Service Role Key - deletes podem falhar por RLS'
+        });
+    } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
