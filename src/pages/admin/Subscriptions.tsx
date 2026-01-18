@@ -18,30 +18,15 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
-import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/services/apiClient";
+import { useSubscriptions } from "@/hooks/useSubscriptions";
 
 export default function Subscriptions() {
     const { session } = useAuth();
-    const [subscriptions, setSubscriptions] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { data, isLoading, isError } = useSubscriptions();
 
-    useEffect(() => {
-        fetchSubscriptions();
-    }, [session]);
-
-    const fetchSubscriptions = async () => {
-        try {
-            const data = await apiFetch('/api/admin/subscriptions');
-            setSubscriptions(data.subscriptions);
-        } catch (error) {
-            console.error(error);
-            toast.error("Erro ao carregar assinaturas");
-        } finally {
-            setLoading(false);
-        }
-    };
+    const subscriptions = data?.subscriptions || [];
+    const loading = isLoading;
 
     const getStatusBadge = (status: string) => {
         switch (status) {

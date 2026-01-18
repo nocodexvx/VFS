@@ -13,29 +13,14 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
-import { apiFetch } from "@/services/apiClient";
+import { useAILogs } from "@/hooks/useAILogs";
 
 export default function AIUsageLogs() {
     const { session } = useAuth();
-    const [logs, setLogs] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { data, isLoading, isError, refetch } = useAILogs();
 
-    useEffect(() => {
-        fetchLogs();
-    }, [session]);
-
-    const fetchLogs = async () => {
-        setLoading(true);
-        try {
-            const data = await apiFetch('/api/admin/logs');
-            setLogs(data.logs);
-        } catch (error) {
-            console.error(error);
-            toast.error("Erro ao carregar logs");
-        } finally {
-            setLoading(false);
-        }
-    };
+    const logs = data?.logs || [];
+    const loading = isLoading;
 
     return (
         <div className="space-y-6">
@@ -48,7 +33,7 @@ export default function AIUsageLogs() {
                     <p className="text-gray-400">Rastreie todas as gerações de vídeo e consumo da API</p>
                 </div>
                 <div className="flex gap-3">
-                    <Button variant="outline" onClick={fetchLogs} className="border-white/10 text-gray-300 hover:bg-white/5">
+                    <Button variant="outline" onClick={() => refetch()} className="border-white/10 text-gray-300 hover:bg-white/5">
                         <RefreshCw className="mr-2 h-4 w-4" /> Atualizar
                     </Button>
                 </div>

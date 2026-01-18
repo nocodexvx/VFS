@@ -76,12 +76,22 @@ export default function UsersManagement() {
     const [searchTerm, setSearchTerm] = useState("");
     const debouncedSearch = useDebounce(searchTerm, 500);
 
+    // Map UI filter to DB role values
+    const getRoleFilter = (uiFilter: string) => {
+        const roleMap: Record<string, string> = {
+            'Todos': 'Todos',
+            'Admins': 'admin',
+            'Usuários': 'user'
+        };
+        return roleMap[uiFilter] || uiFilter;
+    };
+
     // Data Fetching (Server State)
     const { data, isLoading, isError } = useUsers({
         page,
         limit: 10,
         search: debouncedSearch,
-        role: filter
+        role: getRoleFilter(filter)
     });
 
     const users = data?.users || [];
