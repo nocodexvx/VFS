@@ -43,7 +43,16 @@ router.get('/users', requireAdmin, async (req, res) => {
 
         if (search) {
             // ILIKE for case-insensitive search on email or full_name
-            query = query.or(`email.ilike.%${search}%,full_name.ilike.%${search}%`);
+            // Sanitize input to prevent SQL injection
+            // Remove any characters that could be used for SQL injection
+            const sanitizedSearch = search
+                .replace(/[%_]/g, '\\$&') // Escape SQL wildcards
+                .replace(/['";\\]/g, ''); // Remove SQL special characters
+
+            // Only proceed if search term is not empty after sanitization
+            if (sanitizedSearch.trim()) {
+                query = query.or(`email.ilike.%${sanitizedSearch}%,full_name.ilike.%${sanitizedSearch}%`);
+            }
         }
 
         // Apply pagination & ordering
