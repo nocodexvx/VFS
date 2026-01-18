@@ -20,18 +20,48 @@ const supabaseAdmin = createClient(
     }
 );
 
-// LIST USERS
+// LIST USERS (Paginated & Filtered)
 router.get('/users', requireAdmin, async (req, res) => {
     try {
-        // Use Admin Client to bypass RLS policies
-        const { data: users, error } = await supabaseAdmin
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const search = req.query.search || '';
+        const role = req.query.role || '';
+
+        const from = (page - 1) * limit;
+        const to = from + limit - 1;
+
+        // Base query
+        let query = supabaseAdmin
             .from('users')
-            .select('*')
-            .order('created_at', { ascending: false });
+            .select('*', { count: 'exact' });
+
+        // Apply filters
+        if (role && role !== 'Todos' && role !== 'all') {
+            query = query.eq('role', role);
+        }
+
+        if (search) {
+            // ILIKE for case-insensitive search on email or full_name
+            query = query.or(`email.ilike.%${search}%,full_name.ilike.%${search}%`);
+        }
+
+        // Apply pagination & ordering
+        query = query.order('created_at', { ascending: false })
+            .range(from, to);
+
+        const { data: users, error, count } = await query;
 
         if (error) throw error;
-        res.json({ users, total: users.length });
+
+        res.json({
+            users,
+            total: count,
+            page,
+            pages: Math.ceil(count / limit)
+        });
     } catch (e) {
+        console.error("Error fetching users:", e);
         res.status(500).json({ error: e.message });
     }
 });

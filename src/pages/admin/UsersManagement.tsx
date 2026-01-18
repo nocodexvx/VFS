@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
     Search,
     MoreHorizontal,
@@ -10,8 +10,10 @@ import {
     Shield,
     Calendar,
     Mail,
-    User as UserIcon,
-    CreditCard
+    CreditCard,
+    ChevronLeft,
+    ChevronRight,
+    Loader2
 } from "lucide-react";
 import {
     Table,
@@ -55,17 +57,38 @@ import {
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
-import { api, apiFetch } from "@/services/apiClient";
+import { apiFetch } from "@/services/apiClient";
+import { useUsers } from "@/hooks/useUsers";
+import { useDebounce } from "@/hooks/useDebounce";
+import { useQueryClient } from "@tanstack/react-query";
+import { useUsersSubscription } from "@/hooks/useUsersSubscription";
 
 export default function UsersManagement() {
-    const { session } = useAuth();
-    const [users, setUsers] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [selectedUsers, setSelectedUsers] = useState<any[]>([]);
+    const queryClient = useQueryClient();
+
+    // Realtime Subscription
+    useUsersSubscription();
+
+    // Pagination & Filter State
+    const [page, setPage] = useState(1);
     const [filter, setFilter] = useState("Todos");
     const [searchTerm, setSearchTerm] = useState("");
+    const debouncedSearch = useDebounce(searchTerm, 500);
+
+    // Data Fetching (Server State)
+    const { data, isLoading, isError } = useUsers({
+        page,
+        limit: 10,
+        search: debouncedSearch,
+        role: filter
+    });
+
+    const users = data?.users || [];
+    const totalPages = data?.pages || 1;
+
+    // Selection State
+    const [selectedUsers, setSelectedUsers] = useState<any[]>([]);
 
     // Add User Form State
     const [isAddUserOpen, setIsAddUserOpen] = useState(false);
@@ -77,20 +100,8 @@ export default function UsersManagement() {
     // Delete User State
     const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
 
-    useEffect(() => {
-        fetchUsers();
-    }, [session]);
-
-    const fetchUsers = async () => {
-        try {
-            const data = await apiFetch('/api/admin/users');
-            setUsers(data.users);
-        } catch (error) {
-            console.error(error);
-            toast.error("Erro ao carregar usuários");
-        } finally {
-            setLoading(false);
-        }
+    const refreshData = () => {
+        queryClient.invalidateQueries({ queryKey: ['users'] });
     };
 
     const handleAddUser = async () => {
@@ -108,10 +119,10 @@ export default function UsersManagement() {
             toast.success("Usuário criado com sucesso!");
             setIsAddUserOpen(false);
             setNewUser({ name: "", email: "", password: "", role: "user", plan: "none" });
-            fetchUsers();
-        } catch (error) {
+            refreshData();
+        } catch (error: any) {
             console.error(error);
-            toast.error("Erro ao criar usuário.");
+            toast.error(error.message || "Erro ao criar usuário.");
         }
     };
 
@@ -123,7 +134,7 @@ export default function UsersManagement() {
                 body: JSON.stringify({ banned: !isBanned })
             });
             toast.success(isBanned ? "Usuário desbanido" : "Usuário banido");
-            fetchUsers();
+            refreshData();
         } catch (error) {
             console.error(error);
             toast.error("Erro ao alterar status do usuário.");
@@ -138,7 +149,7 @@ export default function UsersManagement() {
             });
             toast.success("Usuário excluído permanentemente.");
             setDeleteUserId(null);
-            fetchUsers();
+            refreshData();
         } catch (error) {
             console.error(error);
             toast.error("Erro ao excluir usuário.");
@@ -146,10 +157,13 @@ export default function UsersManagement() {
     };
 
     const handleExportCSV = () => {
+        // Export only current view or request full export endpoint (ideal)
+        // For now, exporting visible users to keep it simple as per scope, 
+        // but ideally should call an export endpoint.
         const headers = ["ID", "Nome", "Email", "Role", "Criado Em"];
         const csvContent = [
             headers.join(","),
-            ...filteredUsers.map(u =>
+            ...users.map(u =>
                 `"${u.id}","${u.full_name}","${u.email}","${u.role}","${u.created_at}"`
             )
         ].join("\n");
@@ -158,17 +172,17 @@ export default function UsersManagement() {
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.setAttribute("href", url);
-        link.setAttribute("download", "usuarios_variagen.csv");
+        link.setAttribute("download", "usuarios_atual_pagina.csv");
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
     };
 
     const toggleSelectAll = () => {
-        if (selectedUsers.length === filteredUsers.length) {
+        if (selectedUsers.length === users.length) {
             setSelectedUsers([]);
         } else {
-            setSelectedUsers(filteredUsers.map(u => u.id));
+            setSelectedUsers(users.map(u => u.id));
         }
     };
 
@@ -188,20 +202,6 @@ export default function UsersManagement() {
         }
     };
 
-    // Filter Logic
-    const filteredUsers = users.filter(user => {
-        const matchesFilter =
-            filter === "Todos" ? true :
-                filter === "Admins" ? user.role === "admin" :
-                    filter === "Usuários" ? user.role === "user" : true;
-
-        const matchesSearch =
-            (user.full_name?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-            (user.email?.toLowerCase() || "").includes(searchTerm.toLowerCase());
-
-        return matchesFilter && matchesSearch;
-    });
-
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -214,7 +214,7 @@ export default function UsersManagement() {
                 </div>
                 <div className="flex gap-3">
                     <Button variant="outline" onClick={handleExportCSV} className="border-white/10 text-white hover:bg-white/10 hover:text-white">
-                        <Download className="mr-2 h-4 w-4" /> Exportar CSV
+                        <Download className="mr-2 h-4 w-4" /> Exportar CSV (Pág)
                     </Button>
 
                     <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
@@ -284,7 +284,10 @@ export default function UsersManagement() {
                     <Input
                         placeholder="Buscar por email ou nome..."
                         value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onChange={(e) => {
+                            setSearchTerm(e.target.value);
+                            setPage(1); // Reset page on search
+                        }}
                         className="pl-10 bg-background border-input text-foreground placeholder:text-muted-foreground"
                     />
                 </div>
@@ -293,7 +296,10 @@ export default function UsersManagement() {
                     {["Todos", "Admins", "Usuários"].map((tab) => (
                         <button
                             key={tab}
-                            onClick={() => setFilter(tab)}
+                            onClick={() => {
+                                setFilter(tab);
+                                setPage(1); // Reset page on filter change
+                            }}
                             className={cn(
                                 "px-4 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap",
                                 filter === tab
@@ -314,7 +320,7 @@ export default function UsersManagement() {
                         <TableRow className="border-white/10 hover:bg-transparent">
                             <TableHead className="w-12">
                                 <Checkbox
-                                    checked={selectedUsers.length === filteredUsers.length && filteredUsers.length > 0}
+                                    checked={selectedUsers.length === users.length && users.length > 0}
                                     onCheckedChange={toggleSelectAll}
                                     className="border-gray-500 data-[state=checked]:bg-purple-500 data-[state=checked]:border-purple-500"
                                 />
@@ -326,15 +332,22 @@ export default function UsersManagement() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {loading ? (
+                        {isLoading ? (
                             <TableRow>
-                                <TableCell colSpan={5} className="text-center py-8 text-gray-400">Carregando...</TableCell>
+                                <TableCell colSpan={5} className="text-center py-12 text-gray-400">
+                                    <div className="flex flex-col items-center gap-2">
+                                        <Loader2 className="h-6 w-6 animate-spin text-purple-500" />
+                                        <p>Carregando usuários...</p>
+                                    </div>
+                                </TableCell>
                             </TableRow>
-                        ) : filteredUsers.length === 0 ? (
+                        ) : users.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={5} className="text-center py-8 text-gray-400">Nenhum usuário encontrado</TableCell>
+                                <TableCell colSpan={5} className="text-center py-12 text-gray-400">
+                                    {isError ? "Erro ao carregar usuários" : "Nenhum usuário encontrado"}
+                                </TableCell>
                             </TableRow>
-                        ) : filteredUsers.map((user) => (
+                        ) : users.map((user) => (
                             <TableRow key={user.id} className="border-white/5 hover:bg-white/5 transition-colors group">
                                 <TableCell>
                                     <Checkbox
@@ -399,6 +412,33 @@ export default function UsersManagement() {
                     </TableBody >
                 </Table >
             </div >
+
+            {/* Pagination Controls */}
+            <div className="flex items-center justify-between border-t border-white/10 pt-4">
+                <p className="text-sm text-gray-400">
+                    Página {page} de {totalPages} ({data?.total || 0} usuários)
+                </p>
+                <div className="flex gap-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPage(p => Math.max(1, p - 1))}
+                        disabled={page === 1 || isLoading}
+                        className="bg-transparent border-white/10 text-white hover:bg-white/10 hover:text-white disabled:opacity-50"
+                    >
+                        <ChevronLeft className="h-4 w-4 mr-2" /> Anterior
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPage(p => p + 1)}
+                        disabled={page >= totalPages || isLoading}
+                        className="bg-transparent border-white/10 text-white hover:bg-white/10 hover:text-white disabled:opacity-50"
+                    >
+                        Próxima <ChevronRight className="h-4 w-4 ml-2" />
+                    </Button>
+                </div>
+            </div>
 
             {/* View Profile Dialog */}
             <Dialog open={!!viewUser} onOpenChange={(open) => !open && setViewUser(null)}>
